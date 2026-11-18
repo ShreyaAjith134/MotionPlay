@@ -1,0 +1,18 @@
+{
+  "best": "logistic_regression",
+  "cv": {
+    "random_forest": {
+      "window_acc": 0.6481,
+      "session_acc": 0.7778
+    },
+    "logistic_regression": {
+      "window_acc": 0.6728,
+      "session_acc": 0.8889
+    }
+  },
+  "players": [
+    "alice",
+    "bob",
+    "cara"
+  ]
+}

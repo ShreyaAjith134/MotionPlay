@@ -1,0 +1,22 @@
+{
+  "best": "random_forest",
+  "trained_on": "SYNTHETIC windows (record real ones with collect_gestures.py for a model that fits YOUR hand)",
+  "cv": {
+    "random_forest": {
+      "accuracy": 1.0,
+      "macro_f1": 1.0
+    },
+    "hist_gradient_boosting": {
+      "accuracy": 0.9994,
+      "macro_f1": 0.9994
+    },
+    "svm_rbf": {
+      "accuracy": 0.9975,
+      "macro_f1": 0.9975
+    },
+    "logistic_regression": {
+      "accuracy": 0.9956,
+      "macro_f1": 0.9956
+    }
+  }
+}

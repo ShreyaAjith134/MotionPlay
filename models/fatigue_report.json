@@ -1,0 +1,27 @@
+{
+  "best": "random_forest",
+  "cv": {
+    "baseline: persistence": {
+      "mae": 0.1902,
+      "r2": -0.2792
+    },
+    "baseline: mean": {
+      "mae": 0.1831,
+      "r2": -0.0345
+    },
+    "ridge": {
+      "mae": 0.157,
+      "r2": 0.2152
+    },
+    "random_forest": {
+      "mae": 0.1543,
+      "r2": 0.1958
+    },
+    "hist_gradient_boosting": {
+      "mae": 0.1637,
+      "r2": 0.1413
+    }
+  },
+  "windows": 144,
+  "sessions": 18
+}
