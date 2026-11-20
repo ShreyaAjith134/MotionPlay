@@ -1,0 +1,5 @@
+{
+  "channel_id": "PASTE_CHANNEL_ID",
+  "write_key": "PASTE_WRITE_API_KEY",
+  "read_key": "PASTE_READ_API_KEY (only for a private channel)"
+}

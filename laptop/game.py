@@ -17,6 +17,7 @@ import time
 
 import pygame
 
+import cloud
 import db
 from arena import *
 from config import *
@@ -148,6 +149,7 @@ def main():
 
     conn = db.connect(args.db)
     rx = Receiver(args.port)
+    up = cloud.Uploader()
     slots = [Slot(i, n, aw, i * (aw + GAP), args) for i, n in enumerate(names)]
     mode = "versus" if versus else "solo"
 
@@ -162,7 +164,8 @@ def main():
     phase, calib_start, play_start = "calibrating", time.time(), 0.0
     last_flush, running = time.time(), True
     print(f"[{mode}] players: {', '.join(names)} | engine: {slots[0].engine.name} | "
-          f"adaptive: {not args.no_adapt} | waiting for controller(s) on UDP {args.port}")
+          f"adaptive: {not args.no_adapt} | cloud: {'ThingSpeak' if up.enabled else 'off'} | "
+          f"waiting for controller(s) on UDP {args.port}")
 
     while running:
         dt = clock.tick(60) / 1000.0
@@ -241,6 +244,8 @@ def main():
                     s.done = True
                     s.arena.over = True
                     db.end_session(conn, s.sid, now, s.arena.score, s.arena.level, s.arena.lives)
+                    flush(conn, slots)
+                    up.upload(conn, s.sid)
                     rx.send(s.pid, f"E,{s.arena.score}")
                     print(f"{s.name}: score {s.arena.score}, level {s.arena.level}, lives {s.arena.lives}")
             if all(s.done for s in slots):
@@ -269,6 +274,7 @@ def main():
             db.end_session(conn, s.sid, time.time(), s.arena.score, s.arena.level, s.arena.lives)
     rx.close()
     pygame.quit()
+    up.finish()
     print("packets received:", dict(rx.total))
 
 

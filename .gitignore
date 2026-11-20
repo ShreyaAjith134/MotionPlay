@@ -3,3 +3,8 @@ __pycache__/
 *.db
 .venv/
 venv/
+*.db-shm
+*.db-wal
+analysis_out/
+laptop/thingspeak.json
+~$*
