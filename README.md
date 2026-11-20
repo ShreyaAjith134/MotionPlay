@@ -30,7 +30,9 @@ MPU6050 + button ──ESP32──WiFi/UDP 50 Hz──> laptop: receiver → ges
 | Vibration motor **module** | **GPIO25** → IN, VCC 3V3, GND | use a module with a driver. A bare motor needs an NPN transistor + 1 kΩ + diode; never drive a motor straight from a pin |
 | WS2812 / NeoPixel | **GPIO4** → DIN via 330 Ω, VCC, GND | 1 pixel is enough (`RGB_COUNT` in the .ino) |
 
-Diagram: `docs/wiring.png`. **Power:** USB cable or a power bank (a bare LiPo cannot power the board correctly without a boost converter).
+![MotionPlay wiring diagram: ESP32 connected to MPU6050, OLED, button, buzzer, vibration motor and RGB LED](docs/wiring.png)
+
+**Power:** USB cable or a power bank (a bare LiPo cannot power the board correctly without a boost converter).
 
 **Sharing SDA/SCL between MPU6050 and OLED:** the ESP32 only has one pair, so both boards connect to the same two wires. Easiest: a small breadboard as a hub: plug the MPU6050 and OLED headers in, then join matching pins (VCC/GND/SDA/SCL) with jumpers. A typical ESP32 dev board is too wide to leave free holes on a half-size breadboard, so keep it off the breadboard and use wires to it.
 
@@ -75,6 +77,7 @@ python selftest.py                                # ~20 s, checks the whole pipe
 | Tune gestures for your hand | `python gesture_monitor.py` |
 | Analyze | `python analyze.py --player shreya` → `analysis_out/dashboard.png` |
 | Demo data (3 bot players) | `python demo_data.py` then `python analyze.py --db motionplay_demo.db` |
+| Cloud (ThingSpeak) | set up once (section 8b), then every finished game uploads automatically |
 
 Data goes to `laptop/motionplay.db` (created on first run). **SPACE or the button restarts** after game over; **ESC** quits.
 
@@ -140,6 +143,18 @@ frames  (session_id, t, paddle_x)
 gestures(session_id, t, gesture, source, conf, applied)                          source = rules | ml | key | button
 ```
 
+## 8b. Cloud: ThingSpeak
+
+Every finished game uploads one summary row to a ThingSpeak channel, so results can be viewed from any phone or browser. The raw 50 Hz stream stays local (latency, privacy, free-plan limits); only the summary goes to the cloud.
+
+1. Create a free account at thingspeak.com → **Channels → New Channel**. Tick fields 1-8 and name them:
+   `Score`, `Level`, `Catch rate %`, `Lives left`, `Red orbs hit`, `Power-ups used`, `Final speed x`, `Duration s`.
+2. Copy `laptop/thingspeak.example.json` to `laptop/thingspeak.json` and paste the **Channel ID** and **Write API Key** (API Keys tab). This file is gitignored, so the key never reaches GitHub.
+3. `python cloud_sync.py --test` should print `OK, entry 1`. `python cloud_sync.py --show` prints the newest rows stored in the cloud.
+4. Play. The game prints `[cloud] uploaded ...` after each game. Optional: `python cloud_sync.py --all --db motionplay_demo.db` fills the charts with the bot sessions.
+
+Uploads run on a background thread. With no internet the game carries on, the data stays in SQLite, and `cloud_sync.py --last N` uploads it later. The free plan accepts one update per 15 s, so in 2-player mode the second result goes out 16 s after the first.
+
 ## 9. Viva talking points
 
 * Closed loop: the system doesn't only observe, it **acts** (adaptive difficulty + haptic/LED/OLED feedback).
@@ -174,6 +189,7 @@ laptop/synth.py        synthetic IMU                     laptop/simulator.py    
 laptop/demo_data.py    bot players                       laptop/collect_gestures.py  record real gestures
 laptop/analysis_lib.py + analyze.py                      laptop/train_model.py   3 ML models
 laptop/live_dashboard.py   laptop/gesture_monitor.py      laptop/selftest.py
+laptop/cloud.py + cloud_sync.py   ThingSpeak upload
 laptop/config.py       every tunable number
 models/  docs/wiring.png
 ```
